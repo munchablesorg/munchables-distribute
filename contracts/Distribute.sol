@@ -10,7 +10,7 @@ import "./interfaces/IDistribute.sol";
 
 contract Distribute is IDistribute, Ownable {
     address[] account_list;
-    mapping(address => IDistribute.DistributeData) distribute_data;
+    mapping(address => DistributeData) distribute_data;
     // when account data is populated, the total must match these exactly
     // or the contract will not progress to funding stage
     Totals public distribute_totals; // target
