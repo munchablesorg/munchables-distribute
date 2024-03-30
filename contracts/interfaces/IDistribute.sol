@@ -33,6 +33,7 @@ interface IDistribute {
     function seal() external;
     function fund() external payable;
     function distribute(uint256 _start, uint256 _count) external;
+    function rescue() external;
 
     function getDistributeData(address account) external view returns (DistributeData memory return_data);
     function getAccountList(uint256 _start_index) external view returns (address[50] memory _accounts);

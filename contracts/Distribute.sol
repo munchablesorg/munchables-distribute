@@ -16,6 +16,7 @@ contract Distribute is IDistribute, Ownable {
     Totals public distribute_totals; // target
     Totals public populate_totals; // progress
     DistributeStage public distribute_stage;
+    address depositor;
 
     address public USDB_CONTRACT;
     address public WETH_CONTRACT;
@@ -58,25 +59,29 @@ contract Distribute is IDistribute, Ownable {
             TokenType _token = _tokens[i];
             uint256 _quantity = _quantities[i];
 
+            /*
+            hardhat refuses to compile unless this is here
+            YulException: Variable _2 is 1 too deep in the stack [ _4 _51 value_11 _54 _2 value_13 _3 cleaned_1 _53 _55 _57 var_count value_14 _64 _61 memPtr_12 _62 _60 _4 _73 _74 ]
+            memoryguard was present
+            */
+            distribute_data[_account];
+
             require(_token > TokenType.NONE && _token <= TokenType.WETH, "Invalid token type");
+            require(_quantity > 0, "Invalid quantity");
 
-            if (distribute_data[_account].token_type != TokenType.NONE){
-                continue;
+            if (distribute_data[_account].token_type == TokenType.NONE){
+                if (_token == TokenType.ETH){
+                    populate_totals.eth += _quantity;
+                }
+                else if (_token == TokenType.USDB){
+                    populate_totals.usdb += _quantity;
+                }
+                else if (_token == TokenType.WETH){
+                    populate_totals.weth += _quantity;
+                }
+                distribute_data[_account] = DistributeData(_token, _quantity, false);
+                account_list.push(_account);
             }
-            require(distribute_data[_account].token_type == TokenType.NONE, "Address is already populated");
-
-            if (_token == TokenType.ETH){
-                populate_totals.eth += _quantity;
-            }
-            else if (_token == TokenType.USDB){
-                populate_totals.usdb += _quantity;
-            }
-            else if (_token == TokenType.WETH){
-                populate_totals.weth += _quantity;
-            }
-
-            distribute_data[_account] = DistributeData(_token, _quantity, false);
-            account_list.push(_account);
         }
     }
 
@@ -99,6 +104,8 @@ contract Distribute is IDistribute, Ownable {
         weth_contract.transferFrom(msg.sender, address(this), populate_totals.weth);
 
         distribute_stage = DistributeStage.DISTRIBUTE;
+
+        depositor = msg.sender;
     }
 
     function distribute(uint256 _start, uint256 _count) external onlyDistributeStage {
@@ -126,6 +133,10 @@ contract Distribute is IDistribute, Ownable {
             }
             count--;
         }
+    }
+
+    function rescue() external {
+        require(depositor != address(0));
     }
 
     /////////////////////////////////////////
