@@ -50,13 +50,20 @@ contract Distribute is IDistribute, Ownable {
     }
 
     function populate(address[] memory _accounts, TokenType[] memory _tokens, uint256[] memory _quantities) external onlyPopulateStage onlyOwner {
-        for (uint16 i; i < _accounts.length; i++) {
+        uint num_accounts = _accounts.length;
+        require(_accounts.length == _tokens.length, "Array sizes must match");
+        require(_tokens.length == _quantities.length, "Array sizes must match");
+        for (uint16 i; i < num_accounts; i++) {
             address _account = _accounts[i];
             TokenType _token = _tokens[i];
             uint256 _quantity = _quantities[i];
 
             require(_token > TokenType.NONE && _token <= TokenType.WETH, "Invalid token type");
-            require(distribute_data[_account].token_type == TokenType.NONE, string.concat("Address is already populated"));
+
+            if (distribute_data[_account].token_type != TokenType.NONE){
+                continue;
+            }
+            require(distribute_data[_account].token_type == TokenType.NONE, "Address is already populated");
 
             if (_token == TokenType.ETH){
                 populate_totals.eth += _quantity;
