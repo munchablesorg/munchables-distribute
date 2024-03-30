@@ -38,5 +38,8 @@ interface IDistribute {
     function getDistributeData(address account) external view returns (DistributeData memory return_data);
     function getAccountList(uint256 _start_index) external view returns (address[50] memory _accounts);
 
+    event Populated(address account, TokenType token, uint256 quantity);
+    event Sealed();
+    event Funded(address depositor);
     event Distributed(address indexed account, TokenType token_type, uint256 quantity);
 }

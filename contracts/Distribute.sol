@@ -16,6 +16,7 @@ contract Distribute is IDistribute, Ownable {
     // or the contract will not progress to funding stage
     Totals public distribute_totals; // target
     Totals public populate_totals; // progress
+    Totals public sent_totals; // sent
     DistributeStage public distribute_stage;
     address depositor;
 
@@ -89,6 +90,8 @@ contract Distribute is IDistribute, Ownable {
                 }
                 distribute_data[_account] = DistributeData(_token, _quantity, false);
                 account_list.push(_account);
+
+                emit Populated(_account, _token, _quantity);
             }
         }
     }
@@ -100,6 +103,8 @@ contract Distribute is IDistribute, Ownable {
 
         distribute_stage = DistributeStage.FUND;
         renounceOwnership();
+
+        emit Sealed();
     }
 
     function fund() external payable onlyFundStage {
@@ -114,6 +119,8 @@ contract Distribute is IDistribute, Ownable {
         distribute_stage = DistributeStage.DISTRIBUTE;
 
         depositor = msg.sender;
+
+        emit Funded(depositor);
     }
 
     function distribute(uint256 _start, uint256 _count) external onlyDistributeStage {
@@ -128,12 +135,15 @@ contract Distribute is IDistribute, Ownable {
                 // send tokens
                 if (data.token_type == TokenType.ETH){
                     account.transfer(data.quantity);
+                    sent_totals.eth += data.quantity;
                 }
                 else if (data.token_type == TokenType.USDB){
                     usdb_contract.transfer(account, data.quantity);
+                    sent_totals.usdb += data.quantity;
                 }
                 else if (data.token_type == TokenType.WETH){
                     weth_contract.transfer(account, data.quantity);
+                    sent_totals.weth += data.quantity;
                 }
 
                 distribute_data[account].distributed = true;
