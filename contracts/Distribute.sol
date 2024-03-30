@@ -21,6 +21,7 @@ contract Distribute is IDistribute, Ownable {
 
     address public USDB_CONTRACT;
     address public WETH_CONTRACT;
+    address public LOCK_CONTRACT;
 
     modifier onlyPopulateStage() {
         require(distribute_stage == DistributeStage.POPULATE);
@@ -40,7 +41,7 @@ contract Distribute is IDistribute, Ownable {
     }
 
 
-    constructor(address _usdb_contract, address _weth_contract, uint256 _eth_total, uint256 _usdb_total, uint256 _weth_total)
+    constructor(address _usdb_contract, address _weth_contract, uint256 _eth_total, uint256 _usdb_total, uint256 _weth_total, address _lock_contract)
             Ownable(msg.sender) onlyUnconfiguredStage {
         distribute_stage = DistributeStage.POPULATE;
         distribute_totals.eth = _eth_total;
@@ -49,6 +50,8 @@ contract Distribute is IDistribute, Ownable {
 
         USDB_CONTRACT = _usdb_contract;
         WETH_CONTRACT = _weth_contract;
+
+        LOCK_CONTRACT = _lock_contract;
     }
 
     function populate(address[] memory _accounts, TokenType[] memory _tokens, uint256[] memory _quantities) external onlyPopulateStage onlyOwner {
@@ -71,8 +74,8 @@ contract Distribute is IDistribute, Ownable {
             require(_quantity > 0, "Invalid quantity");
 
             // check the old contract to verify
-            ILock.LockInfo lock_info = ILock("0x29958E8E4d8a9899CF1a0aba5883DBc7699a5E1F").getLocked(_account);
-            require(lock_info == _quantity, "Quantity mismatch from Lock contract");
+            ILock.LockInfo memory lock_info = ILock(LOCK_CONTRACT).getLocked(_account);
+            require(lock_info.quantity == _quantity, "Quantity mismatch from Lock contract");
 
             if (distribute_data[_account].token_type == TokenType.NONE){
                 if (_token == TokenType.ETH){
@@ -140,8 +143,25 @@ contract Distribute is IDistribute, Ownable {
         }
     }
 
-    function rescue() external {
-        require(depositor != address(0));
+    function rescue() external onlyDistributeStage {
+        require(depositor != address(0), "Deposit not sent yet");
+
+        IERC20 usdb_contract = IERC20(USDB_CONTRACT);
+        IERC20 weth_contract = IERC20(WETH_CONTRACT);
+
+        uint256 eth_balance = address(this).balance;
+        uint256 usdb_balance = usdb_contract.balanceOf(address(this));
+        uint256 weth_balance = weth_contract.balanceOf(address(this));
+
+        if (eth_balance > 0){
+            payable(depositor).transfer(eth_balance);
+        }
+        if (usdb_balance > 0){
+            usdb_contract.transfer(depositor, usdb_balance);
+        }
+        if (weth_balance > 0){
+            weth_contract.transfer(depositor, weth_balance);
+        }
     }
 
     /////////////////////////////////////////
