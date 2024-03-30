@@ -4,6 +4,7 @@ pragma solidity ^0.8.24;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/interfaces/IERC20.sol";
 import "./interfaces/IDistribute.sol";
+import "./interfaces/ILock.sol";
 
 // Uncomment this line to use console.log
 // import "hardhat/console.sol";
@@ -68,6 +69,10 @@ contract Distribute is IDistribute, Ownable {
 
             require(_token > TokenType.NONE && _token <= TokenType.WETH, "Invalid token type");
             require(_quantity > 0, "Invalid quantity");
+
+            // check the old contract to verify
+            ILock.LockInfo lock_info = ILock("0x29958E8E4d8a9899CF1a0aba5883DBc7699a5E1F").getLocked(_account);
+            require(lock_info == _quantity, "Quantity mismatch from Lock contract");
 
             if (distribute_data[_account].token_type == TokenType.NONE){
                 if (_token == TokenType.ETH){
