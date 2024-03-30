@@ -64,13 +64,6 @@ contract Distribute is IDistribute, Ownable {
             TokenType _token = _tokens[i];
             uint256 _quantity = _quantities[i];
 
-            /*
-            hardhat refuses to compile unless this is here
-            YulException: Variable _2 is 1 too deep in the stack [ _4 _51 value_11 _54 _2 value_13 _3 cleaned_1 _53 _55 _57 var_count value_14 _64 _61 memPtr_12 _62 _60 _4 _73 _74 ]
-            memoryguard was present
-            */
-            distribute_data[_account];
-
             require(_token > TokenType.NONE && _token <= TokenType.WETH, "Invalid token type");
             require(_quantity > 0, "Invalid quantity");
 
