@@ -31,7 +31,7 @@ interface IDistribute {
 
     function populate(address[] memory _accounts, TokenType[] memory _tokens, uint256[] memory _quantities) external;
     function seal() external;
-    function fund() external payable;
+    function fund(address _distributor) external payable;
     function distribute(uint256 _start, uint256 _count) external;
     function rescue() external;
 

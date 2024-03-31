@@ -18,7 +18,8 @@ contract Distribute is IDistribute, Ownable {
     Totals public populate_totals; // progress
     Totals public sent_totals; // sent
     DistributeStage public distribute_stage;
-    address depositor;
+    address public depositor;
+    address public distributor;
 
     address public USDB_CONTRACT;
     address public WETH_CONTRACT;
@@ -69,8 +70,8 @@ contract Distribute is IDistribute, Ownable {
             require(_quantity > 0, "Invalid quantity");
 
             // check the old contract to verify
-            ILock.LockInfo memory lock_info = ILock(LOCK_CONTRACT).getLocked(_account);
-            require(lock_info.quantity == _quantity, "Quantity mismatch from Lock contract");
+//            ILock.LockInfo memory lock_info = ILock(LOCK_CONTRACT).getLocked(_account);
+//            require(lock_info.quantity == _quantity, "Quantity mismatch from Lock contract");
 
             if (distribute_data[_account].token_type == TokenType.NONE){
                 if (_token == TokenType.ETH){
@@ -101,7 +102,7 @@ contract Distribute is IDistribute, Ownable {
         emit Sealed();
     }
 
-    function fund() external payable onlyFundStage {
+    function fund(address _distributor) external payable onlyFundStage {
         require(msg.value > 0 && msg.value == populate_totals.eth, "ETH total incorrect");
         // ETH is here, now transfer the ERC-20s
         IERC20 usdb_contract = IERC20(USDB_CONTRACT);
@@ -113,16 +114,22 @@ contract Distribute is IDistribute, Ownable {
         distribute_stage = DistributeStage.DISTRIBUTE;
 
         depositor = msg.sender;
+        distributor = _distributor;
 
         emit Funded(depositor);
     }
 
     function distribute(uint256 _start, uint256 _count) external onlyDistributeStage {
+        require(msg.sender == distributor, "Only distributor can call distribute()");
+
         uint256 count = _count;
         IERC20 usdb_contract = IERC20(USDB_CONTRACT);
         IERC20 weth_contract = IERC20(WETH_CONTRACT);
 
         while (count > 0){
+            if (account_list.length > _start + count - 1){
+                break;
+            }
             address payable account = payable(account_list[_start + count - 1]);
             DistributeData memory data = distribute_data[account];
             if (!data.distributed){
