@@ -179,6 +179,8 @@ contract Distribute is IDistribute, Ownable {
     }
 
     function getAccountList(uint256 _start_index) external view returns (address[50] memory _accounts) {
+        require(account_list.length > _start_index, "Invalid start index");
+
         address[50] memory ret_accounts;
         for (uint i; i < 50; i++){
             if (account_list.length > _start_index + i){
