@@ -42,7 +42,16 @@ module.exports = {
       url: "http://127.0.0.1:8545"
     },
     hardhat: {
-
+      forking: {
+        url: process.env.MAINNET_NODE,
+      },
+      chains: {
+        81457: {
+          hardforkHistory: {
+            london: 1522195,
+          },
+        }
+      }
     },
     blast_sepolia: {
       url: process.env.TESTNET_NODE,
