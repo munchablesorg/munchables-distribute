@@ -126,11 +126,11 @@ contract Distribute is IDistribute, Ownable {
         IERC20 usdb_contract = IERC20(USDB_CONTRACT);
         IERC20 weth_contract = IERC20(WETH_CONTRACT);
 
+        if (account_list.length < _start + count - 1){
+            count = account_list.length - _start;
+        }
+
         while (count > 0){
-            if (account_list.length < _start + count - 1){
-                count--;
-                continue;
-            }
             address payable account = payable(account_list[_start + count - 1]);
             DistributeData memory data = distribute_data[account];
             if (!data.distributed){
