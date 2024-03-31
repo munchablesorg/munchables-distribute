@@ -148,6 +148,7 @@ contract Distribute is IDistribute, Ownable {
 
     function rescue() external onlyDistributeStage {
         require(depositor != address(0), "Deposit not sent yet");
+        require(msg.sender == depositor, "Only depositor can rescue");
 
         IERC20 usdb_contract = IERC20(USDB_CONTRACT);
         IERC20 weth_contract = IERC20(WETH_CONTRACT);
