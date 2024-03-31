@@ -40,6 +40,6 @@ interface IDistribute {
 
     event Populated(address account, TokenType token, uint256 quantity);
     event Sealed();
-    event Funded(address depositor);
+    event Funded(address depositor, address distributor);
     event Distributed(address indexed account, TokenType token_type, uint256 quantity);
 }

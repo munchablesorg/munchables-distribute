@@ -116,7 +116,7 @@ contract Distribute is IDistribute, Ownable {
         depositor = msg.sender;
         distributor = _distributor;
 
-        emit Funded(depositor);
+        emit Funded(depositor, distributor);
     }
 
     function distribute(uint256 _start, uint256 _count) external onlyDistributeStage {
