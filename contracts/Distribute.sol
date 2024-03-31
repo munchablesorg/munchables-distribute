@@ -55,7 +55,8 @@ contract Distribute is IDistribute, Ownable {
         LOCK_CONTRACT = _lock_contract;
     }
 
-    function populate(address[] memory _accounts, TokenType[] memory _tokens, uint256[] memory _quantities) external onlyPopulateStage onlyOwner {
+    function populate(address[] calldata _accounts, TokenType[] calldata _tokens, uint256[] calldata _quantities) external onlyPopulateStage onlyOwner {
+
         uint num_accounts = _accounts.length;
         require(_accounts.length == _tokens.length, "Array sizes must match");
         require(_tokens.length == _quantities.length, "Array sizes must match");
