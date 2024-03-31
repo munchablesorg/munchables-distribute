@@ -128,7 +128,7 @@ contract Distribute is IDistribute, Ownable {
 
         while (count > 0){
             if (account_list.length < _start + count - 1){
-                break;
+                continue;
             }
             address payable account = payable(account_list[_start + count - 1]);
             DistributeData memory data = distribute_data[account];
