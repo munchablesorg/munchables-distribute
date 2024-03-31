@@ -127,7 +127,7 @@ contract Distribute is IDistribute, Ownable {
         IERC20 weth_contract = IERC20(WETH_CONTRACT);
 
         while (count > 0){
-            if (account_list.length > _start + count - 1){
+            if (account_list.length < _start + count - 1){
                 break;
             }
             address payable account = payable(account_list[_start + count - 1]);
